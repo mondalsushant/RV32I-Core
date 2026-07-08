@@ -36,13 +36,13 @@ module ControlUnit(
         JAL = 7'b1101111, // Jump and Link
         JALR = 7'b1100111, // Jump and Link Register
         LUI = 7'b0110111, // Load Upper Immediate
-        AUIPC = 7'b0010111 // 
+        AUIPC = 7'b0010111
     } opcodes;
-    
+
     always_comb begin
         reg_write = 1'b0; alu_src = 1'b0; imm_sel = 3'b000; mem_write = 1'd0; mem_read = 1'b0; branch = 1'b0; jump = 1'b0; jalr = 1'b0; result_src = 2'b00; ALU_Sel = 4'b0000;
-        case (opcode)
-            R: begin 
+        case (opcodes'(opcode))
+            R: begin
                 reg_write = 1'b1;
                 imm_sel = 3'bxxx;
                 case (funct3)
@@ -54,12 +54,13 @@ module ControlUnit(
                     3'b101: ALU_Sel = (funct7b5) ? SRA: SRL;
                     3'b110: ALU_Sel = OR;
                     3'b111: ALU_Sel = AND;
-                    default: ALU_Sel = 4'bxxxX;
+                    default: ALU_Sel = 4'bxxxx;
                 endcase
             end
             I: begin
                 reg_write = 1'b1;
                 alu_src = 1'b1;
+                imm_sel = 3'b000;
                 case (funct3)
                     3'b000: ALU_Sel = ADD;
                     3'b001: ALU_Sel = SLL;
@@ -77,6 +78,7 @@ module ControlUnit(
                 alu_src = 1'b1;
                 mem_read = 1'b1;
                 result_src = 2'b01;
+                imm_sel = 3'b000;
             end
             S: begin
                 alu_src = 1'b1;
@@ -100,7 +102,7 @@ module ControlUnit(
                 alu_src = 1'b1;
                 imm_sel = 3'b100;
                 jump = 1'b1;
-                
+
                 result_src = 2'b10;
             end
             JALR: begin
@@ -109,6 +111,7 @@ module ControlUnit(
                 jump = 1'b1;
                 jalr = 1'b1;
                 result_src = 2'b10;
+                imm_sel = 3'b000;
             end
             LUI, AUIPC : begin
                 reg_write = 1'b1;
@@ -116,7 +119,7 @@ module ControlUnit(
                 imm_sel = 3'b011;
                 ALU_Sel = (opcode[5]) ? PASSB:ADD;
             end
-            
+            default: ;
         endcase
     end
 endmodule
